@@ -1,7 +1,7 @@
 update: all
 search: True
 pin: True
-branch: develop
+branch: develop-pyup
 branch_prefix: pyup-
 close_prs: True
-label_prs: False
+label_prs: True
