@@ -1,7 +1,14 @@
 # A CircleCI configuration file because we do continuous integration testing!
 
-version: 2
-
+version: 2.1
+orbs:
+    snyk: snyk/snyk@0.0.13
+workflows:
+    build:
+        jobs:
+            - build:
+                context:
+                    - snyk_api
 jobs:
   build:
     docker:
@@ -77,21 +84,29 @@ jobs:
 #    - run: coverage run --source='.' --branch -p manage.py test guidedmodules
 #    - run: coverage run --source='.' --branch -p manage.py test siteapp
 #    - run: coverage run --source='.' --branch -p manage.py test system_settings
-    - run:
-        name: All tests run in split
-        command: |
-          TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split --split-by=timings --timings-type=filename)
-          coverage run --source='.' --branch -p manage.py test  --verbosity=2 $TESTFILES -v 2
+    #- run:
+    #    name: All tests run in split
+    #    command: |
+    #      TESTFILES=$(circleci tests glob "test/**/*.py" | circleci tests split --split-by=timings --timings-type=filename)
+    #      coverage run --source='.' --branch -p manage.py test  --verbosity=2 $TESTFILES -v 2
     # - run: coverage run --source='.' --branch -p manage.py test discussion
     # Commenting out tests until better solution for testing after page loaded
     #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.LandingSiteFunctionalTests
     # - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.GeneralTests
     #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.QuestionsTests
-    - run: coverage combine
-    - run: coverage report # output to stdout.
-    - run: coverage xml # generate report artifact coverage.xml.
-    - run: coverage html # generate report artifact htmlcov/*.
+    #- run: coverage combine
+    #- run: coverage report # output to stdout.
+    #- run: coverage xml # generate report artifact coverage.xml.
+    #- run: coverage html # generate report artifact htmlcov/*.
+
     - store_artifacts:
         path: coverage.xml
     - store_artifacts:
         path: htmlcov
+
+    # Snyk Scan
+    - snyk/scan:
+        token-variable: SNYK_API_TOKEN
+        monitor-on-build: true
+        project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_PROJECT_REPONAME}'
+        target-file: requirements.txt
